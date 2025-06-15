@@ -361,7 +361,7 @@ jobs:
           body_path: release.txt
           files: |
             ${{ env.FIRMWARE }}/*sysupgrade.bin
-            ${{ env.FIRMWARE }}/*factory.bin
+            # ${{ env.FIRMWARE }}/*factory.bin
           overwrite: true
 
       - name: 检查 WebDAV 凭证
