@@ -336,21 +336,39 @@ jobs:
           echo "FIRMWARE=$PWD" >> $GITHUB_ENV
           echo "status=success" >> $GITHUB_OUTPUT
 
+
       - name: 生成标签和发布描述
         id: tag
         if: env.UPLOAD_RELEASE == 'true' && steps.compile.outputs.status == 'success'
         run: |
           set -e
-          echo "RELEASE_TAG=ImmortalWrt-24.10-${{ matrix.device_model }}-${{ env.FIRMWARE_VERSION }}" >> $GITHUB_OUTPUT
-          cat << EOF > release.txt
+          # 验证必要变量
+          if [ -z "${{ matrix.device_model }}" ] || [ -z "${{ env.FIRMWARE_VERSION }}" ]; then
+            echo "Missing required variables"
+            exit 1
+          fi
           
-          **固件版本**: ImmortalWrt ${{ env.FIRMWARE_VERSION }}  
-          **设备**: ${{ matrix.device_model }}  
-          **编译时间**: $(date +"%Y-%m-%d %H:%M %Z")  
-          **高功率模式**: ${{ (github.event_name != 'workflow_dispatch' || github.event.inputs.enable_5g_25db == 'true') && '已启用' || '未启用' }}  
-          EOF
+          # 生成标签
+          TAG="ImmortalWrt-24.10-${{ matrix.device_model }}-${{ env.FIRMWARE_VERSION }}"
+          echo "RELEASE_TAG=$TAG" >> $GITHUB_OUTPUT
+          
+          # 生成发布说明
+          {
+            echo "固件版本: ImmortalWrt ${{ env.FIRMWARE_VERSION }}"
+            echo "设备型号: ${{ matrix.device_model }}"
+            echo "编译时间: $(date +'%Y-%m-%d %H:%M %Z')"
+            echo "高功率模式: $([ "${{ github.event.inputs.enable_5g_25db }}" = 'true' ] && echo '已启用' || echo '未启用')"
+            echo -e "\n### 更新内容"
+            git log --pretty=format:"- %s" -n 5
+          } > release.txt
+          
           echo "status=success" >> $GITHUB_OUTPUT
 
+
+      - name: 验证Release创建
+        run: |
+          curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ steps.tag.outputs.RELEASE_TAG }} | jq .
 
       - name: 调试输出
         run: |
