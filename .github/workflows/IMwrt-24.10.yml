@@ -361,9 +361,7 @@ jobs:
           body_path: release.txt
           files: |
             ${{ env.FIRMWARE }}/*sysupgrade.bin
-            # ${{ env.FIRMWARE }}/*factory.bin
-          overwrite: true
-
+            
       - name: 检查 WebDAV 凭证
         if: steps.compile.outputs.status == 'success' && env.WEBDAV_URL && env.WEBDAV_USERNAME && env.WEBDAV_PASSWORD
         run: |
