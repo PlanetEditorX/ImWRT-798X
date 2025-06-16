@@ -359,8 +359,9 @@ jobs:
         with:
           tag_name: ${{ steps.tag.outputs.RELEASE_TAG }}
           body_path: release.txt
-          files: |
-            ${{ env.FIRMWARE }}/*sysupgrade.bin
+          files: ${{ env.FIRMWARE }}/*sysupgrade.bin
+          prerelease: false             # 设为正式发布
+          make_latest: true             # 标记为最新版本
             
       - name: 检查 WebDAV 凭证
         if: steps.compile.outputs.status == 'success' && env.WEBDAV_URL && env.WEBDAV_USERNAME && env.WEBDAV_PASSWORD
