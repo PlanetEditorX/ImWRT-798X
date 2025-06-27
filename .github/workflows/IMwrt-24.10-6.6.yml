@@ -27,8 +27,13 @@ on:
       repo_branch:
         description: '源仓库分支'
         default: 'openwrt-24.10-6.6'
-  schedule:
-    - cron: '40 15 * * *'  # test
+      ssh:
+        description: 'SSH connection to Actions'
+        type: boolean
+        required: true
+        default: false
+  # schedule:
+  #   - cron: '40 15 * * *'  # test
 
 permissions:
   contents: write
@@ -248,7 +253,14 @@ jobs:
           else
             echo "source_changed=false" >> $GITHUB_OUTPUT
           fi
-
+          
+      - name: SSH链接管理
+        uses: P3TERX/ssh2actions@v1.0.0
+        if: (github.event.inputs.ssh == 'true')
+        env:
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        
       - name: 编译固件
         id: compile
         timeout-minutes: 180
