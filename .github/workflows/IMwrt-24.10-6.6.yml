@@ -34,6 +34,13 @@ on:
         options:
           - 'openwrt-24.10-6.6'
           - '2410'
+      config_file:
+        description: '配置文件'
+        default: '24.10-6.6.config'
+        type: choice
+        options:
+          - '24.10-6.6.config'
+          - '2410.config'
       ssh:
         description: 'SSH connection to Actions'
         type: boolean
@@ -48,7 +55,7 @@ env:
   REPO_URL: ${{ github.event.inputs.repo_url || 'https://github.com/padavanonly/immortalwrt-mt798x-24.10' }}
   REPO_BRANCH: ${{ github.event.inputs.repo_branch || 'openwrt-24.10-6.6' }}
   FEEDS_CONF: feeds.conf.default
-  CONFIG_FILE: 24.10-6.6.config
+  CONFIG_FILE:  ${{ github.event.inputs.config_file || '24.10-6.6.config' }}
   DIY_P1_SH: scripts/diy-part1.sh
   DIY_P2_SH: scripts/diy-part2.sh
   UPLOAD_FIRMWARE: true
@@ -384,8 +391,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ steps.tag.outputs.RELEASE_TAG }}
-          release_name: Release ${{ steps.tag.outputs.RELEASE_TAG }}
-          body: release.txt
+          release_name: ${{ steps.tag.outputs.RELEASE_TAG }}
+          body_path: release.txt
           files: ${{ env.FIRMWARE }}/*sysupgrade.bin
           draft: false
           prerelease: false
