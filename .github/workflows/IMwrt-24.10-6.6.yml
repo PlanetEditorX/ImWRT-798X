@@ -386,6 +386,7 @@ jobs:
           tag_name: ${{ steps.tag.outputs.RELEASE_TAG }}
           release_name: Release ${{ steps.tag.outputs.RELEASE_TAG }}
           body: release.txt
+          files: ${{ env.FIRMWARE }}/*sysupgrade.bin
           draft: false
           prerelease: false
 
@@ -420,6 +421,7 @@ jobs:
 
       - name: 清理旧 Releases
         if: steps.tag.outputs.status == 'success'
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
