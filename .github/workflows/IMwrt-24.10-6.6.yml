@@ -376,18 +376,18 @@ jobs:
           echo "TAG状态: ${{ steps.tag.outputs.status }}"
           ls -la ${{ env.FIRMWARE }}/
           
-
       - name: 发布固件
-        uses: softprops/action-gh-release@v2.1.0
+        id: create_release
+        uses: actions/create-release@v1
         if: steps.tag.outputs.status == 'success'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ steps.tag.outputs.RELEASE_TAG }}
-          body_path: release.txt
-          files: ${{ env.FIRMWARE }}/*sysupgrade.bin
+          release_name: Release ${{ steps.tag.outputs.RELEASE_TAG }}
+          body: release.txt
+          draft: false
           prerelease: false
-          make_latest: true
 
       - name: 检查 WebDAV 凭证
         if: steps.compile.outputs.status == 'success' && env.WEBDAV_URL && env.WEBDAV_USERNAME && env.WEBDAV_PASSWORD
