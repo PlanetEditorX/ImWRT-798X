@@ -378,29 +378,8 @@ jobs:
           echo "FIRMWARE路径: ${{ env.FIRMWARE }}"
           echo "TAG状态: ${{ steps.tag.outputs.status }}"
           ls -la ${{ env.FIRMWARE }}/
-
-      # - name: 创建发布
-      #   id: create_release
-      #   uses: actions/create-release@v1
-      #   if: steps.tag.outputs.status == 'success'
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     tag_name: ${{ steps.tag.outputs.RELEASE_TAG }}
-      #     release_name: ${{ steps.tag.outputs.RELEASE_TAG }}
-      #     body_path: release.txt
-      #     draft: false
-      #     prerelease: false
-
-      # - name: 上传固件
-      #   uses: actions/upload-release-asset@v1
-      #   if: steps.create_release.outputs.id
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: ${{ env.FIRMWARE }}/*sysupgrade.bin
-      #     asset_content_type: application/octet-stream
+          ls -la ${{ env.FIRMWARE }}/*sysupgrade.bin
+          ls -la release.txt
 
       - name: 删除同名 tag（如已存在）
         run: |
@@ -408,18 +387,28 @@ jobs:
           git tag -d ${{ steps.tag.outputs.RELEASE_TAG }} || true
         continue-on-error: true
 
-      - name: 发布固件
-        uses: softprops/action-gh-release@v2.3.2
+      - name: 创建发布
+        id: create_release
+        uses: actions/create-release@v1
         if: steps.tag.outputs.status == 'success'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ steps.tag.outputs.RELEASE_TAG }}
-          name: ${{ steps.tag.outputs.RELEASE_TAG }}
+          release_name: ${{ steps.tag.outputs.RELEASE_TAG }}
           body_path: release.txt
-          files: ${{ env.FIRMWARE }}/*sysupgrade.bin
+          draft: false
           prerelease: false
-          make_latest: true
+
+      - name: 上传固件
+        uses: actions/upload-release-asset@v1
+        if: steps.create_release.outputs.id
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ env.FIRMWARE }}/*sysupgrade.bin
+          asset_content_type: application/octet-stream
 
       - name: 验证Release创建
         run: |
