@@ -358,7 +358,7 @@ jobs:
 
           # 生成标签
           TAG="ImmortalWrt-24.10-${{ matrix.device_model }}-${{ env.FIRMWARE_VERSION }}"
-          echo "RELEASE_TAG=$TAG-$(date +%Y%m%d%H%M%S)" >> $GITHUB_OUTPUT
+          echo "RELEASE_TAG=$TAG-$(date +%Y%m%d%H%M%S)" | tee -a $GITHUB_OUTPUT >> $GITHUB_ENV
 
           # 生成发布说明
           {
@@ -370,7 +370,6 @@ jobs:
             git log --pretty=format:"- %s" -n 5
           } > release.txt
 
-          cat release.txt
           echo "status=success" >> $GITHUB_OUTPUT
 
       - name: 调试输出
@@ -379,13 +378,27 @@ jobs:
           echo "TAG状态: ${{ steps.tag.outputs.status }}"
           ls -la ${{ env.FIRMWARE }}/
           ls -la ${{ env.FIRMWARE }}/*sysupgrade.bin
-          ls -la release.txt
 
       - name: 删除同名 tag（如已存在）
         run: |
-          git push --delete origin ${{ steps.tag.outputs.RELEASE_TAG }} || true
-          git tag -d ${{ steps.tag.outputs.RELEASE_TAG }} || true
+          git push --delete origin $RELEASE_TAG || true
+          git tag -d $RELEASE_TAG || true
         continue-on-error: true
+
+      - name: 检查 release.txt
+        run: |
+          ls -l ${{ github.workspace }}/release.txt
+          cat ${{ github.workspace }}/release.txt
+          if [ ! -s ${{ github.workspace }}/release.txt ]; then
+            echo "错误：release.txt 文件为空或不存在"
+            exit 1
+          fi
+
+      - name: 检查 tag 步骤输出
+        run: |
+          echo "tag status: ${{ steps.tag.outputs.status }}"
+          echo "RELEASE_TAG: ${{ steps.tag.outputs.RELEASE_TAG }}"
+          echo "RELEASE_TAG env: $RELEASE_TAG"
 
       - name: 创建发布
         id: create_release
@@ -394,11 +407,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.tag.outputs.RELEASE_TAG }}
-          release_name: ${{ steps.tag.outputs.RELEASE_TAG }}
-          body_path: release.txt
-          draft: false
-          prerelease: false
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: ${{ env.RELEASE_TAG }}
+          body_path: ${{ github.workspace }}/release.txt
 
       - name: 上传固件
         uses: actions/upload-release-asset@v1
@@ -413,12 +424,12 @@ jobs:
       - name: 验证Release创建
         run: |
           curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-          https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ steps.tag.outputs.RELEASE_TAG }} | jq .
+          https://api.github.com/repos/${{ github.repository }}/releases/tags/$RELEASE_TAG | jq .
           if [ $? -ne 0 ]; then
             echo "错误：Release 创建失败"
             exit 1
           fi
-          echo "Release 创建成功: ${{ steps.tag.outputs.RELEASE_TAG }}"
+          echo "Release 创建成功: $RELEASE_TAG"
 
       - name: 检查 WebDAV 凭证
         if: steps.compile.outputs.status == 'success' && env.WEBDAV_URL && env.WEBDAV_USERNAME && env.WEBDAV_PASSWORD
