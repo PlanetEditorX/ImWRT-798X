@@ -426,6 +426,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ env.FIRMWARE }}/*sysupgrade.bin
+          asset_name: cmcc_rax3000m-emmc_sysupgrade.bin
           asset_content_type: application/octet-stream
 
       - name: 验证Release创建
