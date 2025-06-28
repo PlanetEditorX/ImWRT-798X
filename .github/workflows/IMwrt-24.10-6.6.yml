@@ -370,6 +370,7 @@ jobs:
             git log --pretty=format:"- %s" -n 5
           } > release.txt
 
+          cat release.txt
           echo "status=success" >> $GITHUB_OUTPUT
 
       - name: 调试输出
@@ -411,6 +412,12 @@ jobs:
       #     asset_path: ${{ env.FIRMWARE }}/*sysupgrade.bin
       #     asset_content_type: application/octet-stream
 
+      - name: 删除同名 tag（如已存在）
+        run: |
+          git push --delete origin ${{ steps.tag.outputs.RELEASE_TAG }} || true
+          git tag -d ${{ steps.tag.outputs.RELEASE_TAG }} || true
+        continue-on-error: true
+
       - name: 发布固件
         uses: softprops/action-gh-release@v2.1.0
         if: steps.tag.outputs.status == 'success'
@@ -418,7 +425,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ steps.tag.outputs.RELEASE_TAG }}
-          release_name: ${{ steps.tag.outputs.RELEASE_TAG }}  # 显式命名Release
+          name: ${{ steps.tag.outputs.RELEASE_TAG }}
           body_path: release.txt
           files: ${{ env.FIRMWARE }}/*sysupgrade.bin
           prerelease: false
