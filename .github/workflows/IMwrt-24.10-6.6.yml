@@ -402,19 +402,19 @@ jobs:
           echo "Release 创建成功: ${{ steps.tag.outputs.RELEASE_TAG }}"
 
       - name: 上传固件
-        # uses: actions/upload-release-asset@v1
+        uses: actions/upload-release-asset@v1
         if: steps.create_release.outputs.id
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        # with:
-        #   upload_url: ${{ steps.create_release.outputs.upload_url }}
-        #   asset_path: ${{ env.FIRMWARE }}/*sysupgrade.bin
-        #   asset_name: firmware.bin
-        #   asset_content_type: application/octet-stream
-        uses: actions/upload-artifact@v4
         with:
-          name: firmware-files
-          path: ${{ env.FIRMWARE }}/
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ env.FIRMWARE }}/*sysupgrade.bin
+          asset_content_type: application/octet-stream
+          
+        # uses: actions/upload-artifact@v4
+        # with:
+        #   name: firmware-files
+        #   path: ${{ env.FIRMWARE }}/
           # exclude: sysupgrade.bin  # 排除特定文件
 
       - name: 检查 WebDAV 凭证
