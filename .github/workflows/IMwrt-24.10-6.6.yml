@@ -401,21 +401,28 @@ jobs:
           fi
           echo "Release 创建成功: ${{ steps.tag.outputs.RELEASE_TAG }}"
 
-      - name: 上传固件
-        uses: actions/upload-release-asset@v1
-        if: steps.create_release.outputs.id
+      # - name: 上传固件
+      #   uses: actions/upload-release-asset@v1
+      #   if: steps.create_release.outputs.id
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #     asset_path: ${{ env.FIRMWARE }}/*sysupgrade.bin
+      #     asset_content_type: application/octet-stream
+
+      - name: 发布固件
+        uses: softprops/action-gh-release@v2.1.0
+        if: steps.tag.outputs.status == 'success'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ env.FIRMWARE }}/*sysupgrade.bin
-          asset_content_type: application/octet-stream
+          tag_name: ${{ steps.tag.outputs.RELEASE_TAG }}
+          body_path: release.txt
+          files: ${{ env.FIRMWARE }}/*sysupgrade.bin
+          prerelease: false
+          make_latest: true
           
-        # uses: actions/upload-artifact@v4
-        # with:
-        #   name: firmware-files
-        #   path: ${{ env.FIRMWARE }}/
-          # exclude: sysupgrade.bin  # 排除特定文件
 
       - name: 检查 WebDAV 凭证
         if: steps.compile.outputs.status == 'success' && env.WEBDAV_URL && env.WEBDAV_USERNAME && env.WEBDAV_PASSWORD
