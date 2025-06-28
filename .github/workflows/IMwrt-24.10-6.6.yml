@@ -378,28 +378,28 @@ jobs:
           echo "TAG状态: ${{ steps.tag.outputs.status }}"
           ls -la ${{ env.FIRMWARE }}/
 
-      - name: 创建发布
-        id: create_release
-        uses: actions/create-release@v1
-        if: steps.tag.outputs.status == 'success'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.tag.outputs.RELEASE_TAG }}
-          release_name: ${{ steps.tag.outputs.RELEASE_TAG }}
-          body_path: release.txt
-          draft: false
-          prerelease: false
+      # - name: 创建发布
+      #   id: create_release
+      #   uses: actions/create-release@v1
+      #   if: steps.tag.outputs.status == 'success'
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     tag_name: ${{ steps.tag.outputs.RELEASE_TAG }}
+      #     release_name: ${{ steps.tag.outputs.RELEASE_TAG }}
+      #     body_path: release.txt
+      #     draft: false
+      #     prerelease: false
 
-      - name: 验证Release创建
-        run: |
-          curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-          https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ steps.tag.outputs.RELEASE_TAG }} | jq .
-          if [ $? -ne 0 ]; then
-            echo "错误：Release 创建失败"
-            exit 1
-          fi
-          echo "Release 创建成功: ${{ steps.tag.outputs.RELEASE_TAG }}"
+      # - name: 验证Release创建
+      #   run: |
+      #     curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+      #     https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ steps.tag.outputs.RELEASE_TAG }} | jq .
+      #     if [ $? -ne 0 ]; then
+      #       echo "错误：Release 创建失败"
+      #       exit 1
+      #     fi
+      #     echo "Release 创建成功: ${{ steps.tag.outputs.RELEASE_TAG }}"
 
       # - name: 上传固件
       #   uses: actions/upload-release-asset@v1
@@ -418,11 +418,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ steps.tag.outputs.RELEASE_TAG }}
+          release_name: ${{ steps.tag.outputs.RELEASE_TAG }}  # 显式命名Release
           body_path: release.txt
           files: ${{ env.FIRMWARE }}/*sysupgrade.bin
           prerelease: false
           make_latest: true
-          
 
       - name: 检查 WebDAV 凭证
         if: steps.compile.outputs.status == 'success' && env.WEBDAV_URL && env.WEBDAV_USERNAME && env.WEBDAV_PASSWORD
