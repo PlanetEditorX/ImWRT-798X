@@ -400,6 +400,13 @@ jobs:
           echo "RELEASE_TAG: ${{ steps.tag.outputs.RELEASE_TAG }}"
           echo "RELEASE_TAG env: $RELEASE_TAG"
 
+      - name: 检查固件文件是否存在
+        run: |
+          if ! ls ${{ env.FIRMWARE }}/*sysupgrade.bin 1>/dev/null 2>&1; then
+            echo "未找到 sysupgrade.bin 文件，跳过上传固件步骤"
+            exit 0
+          fi
+
       - name: 创建发布
         id: create_release
         uses: actions/create-release@v1
