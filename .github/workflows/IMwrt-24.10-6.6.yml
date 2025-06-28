@@ -465,8 +465,12 @@ jobs:
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MATRIX_DEVICE_MODEL: ${{ matrix.device_model }}
         run: |
-          RELEASES=$(gh release list --repo ${{ github.repository }} --limit 100 --json name --jq '.[] | select(.name | test("ImmortalWrt-24.10-${{ matrix.device_model }}")) | .name' | tail -n +1)
+          echo "当前设备型号: $MATRIX_DEVICE_MODEL"
+          gh --version
+          RELEASES=$(gh release list --repo ${{ github.repository }} --limit 100 --json name --jq ".[] | select(.name | test(\"ImmortalWrt-24.10-$MATRIX_DEVICE_MODEL\")) | .name")
+          echo "待删除的 Releases: $RELEASES"
           if [ -n "$RELEASES" ]; then
             for RELEASE in $RELEASES; do
               gh release delete "$RELEASE" --yes || { echo "删除 Release $RELEASE 失败"; exit 1; }
