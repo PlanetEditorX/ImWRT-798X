@@ -376,7 +376,6 @@ jobs:
         run: |
           echo "FIRMWARE路径: ${{ env.FIRMWARE }}"
           echo "TAG状态: ${{ steps.tag.outputs.status }}"
-          ls -la ${{ env.FIRMWARE }}/
           ls -la ${{ env.FIRMWARE }}/*sysupgrade.bin
 
       - name: 删除同名 tag（如已存在）
@@ -401,10 +400,12 @@ jobs:
           echo "RELEASE_TAG env: $RELEASE_TAG"
 
       - name: 检查固件文件是否存在
+        id: check_firmware
         run: |
-          if ! ls ${{ env.FIRMWARE }}/*sysupgrade.bin 1>/dev/null 2>&1; then
-            echo "未找到 sysupgrade.bin 文件，跳过上传固件步骤"
-            exit 0
+          if ls ${{ env.FIRMWARE }}/*sysupgrade.bin 1>/dev/null 2>&1; then
+            echo "found=true" >> $GITHUB_OUTPUT
+          else
+            echo "found=false" >> $GITHUB_OUTPUT
           fi
 
       - name: 创建发布
@@ -415,12 +416,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ env.RELEASE_TAG }}
-          name: ${{ env.RELEASE_TAG }}
+          release_name: ${{ env.RELEASE_TAG }}
           body_path: ${{ github.workspace }}/release.txt
 
       - name: 上传固件
         uses: actions/upload-release-asset@v1
-        if: steps.create_release.outputs.id
+        if: steps.create_release.outputs.id && steps.check_firmware.outputs.found == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
