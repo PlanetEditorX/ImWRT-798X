@@ -399,15 +399,6 @@ jobs:
           echo "RELEASE_TAG: ${{ steps.tag.outputs.RELEASE_TAG }}"
           echo "RELEASE_TAG env: $RELEASE_TAG"
 
-      - name: 检查固件文件是否存在
-        id: check_firmware
-        run: |
-          if ls ${{ env.FIRMWARE }}/*sysupgrade.bin 1>/dev/null 2>&1; then
-            echo "found=true" >> $GITHUB_OUTPUT
-          else
-            echo "found=false" >> $GITHUB_OUTPUT
-          fi
-
       - name: 创建发布
         id: create_release
         uses: actions/create-release@v1
@@ -419,15 +410,28 @@ jobs:
           release_name: ${{ env.RELEASE_TAG }}
           body_path: ${{ github.workspace }}/release.txt
 
+      - name: 查找固件文件
+        id: find_firmware
+        run: |
+          FILE=$(ls ${{ env.FIRMWARE }}/*sysupgrade.bin 2>/dev/null | head -n 1)
+          if [ -z "$FILE" ]; then
+            echo "未找到 sysupgrade.bin，跳过上传"
+            echo "found=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          echo "ASSET_PATH=$FILE" >> $GITHUB_ENV
+          echo "ASSET_NAME=$(basename $FILE)" >> $GITHUB_ENV
+          echo "found=true" >> $GITHUB_OUTPUT
+
       - name: 上传固件
         uses: actions/upload-release-asset@v1
-        if: steps.create_release.outputs.id && steps.check_firmware.outputs.found == 'true'
+        if: steps.create_release.outputs.id && steps.find_firmware.outputs.found == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ env.FIRMWARE }}/*sysupgrade.bin
-          asset_name: cmcc_rax3000m-emmc_sysupgrade.bin
+          asset_path: ${{ env.ASSET_PATH }}
+          asset_name: ${{ env.ASSET_NAME }}
           asset_content_type: application/octet-stream
 
       - name: 验证Release创建
