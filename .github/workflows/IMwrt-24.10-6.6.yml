@@ -434,13 +434,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MATRIX_DEVICE_MODEL: ${{ matrix.device_model }}
+          CURRENT_RELEASE: ${{ env.RELEASE_TAG }}
         run: |
           echo "当前设备型号: $MATRIX_DEVICE_MODEL"
+          echo "当前保留 Release: $CURRENT_RELEASE"
           gh --version
           RELEASES=$(gh release list --repo ${{ github.repository }} --limit 100 --json name --jq ".[] | select(.name | test(\"ImmortalWrt-24.10-$MATRIX_DEVICE_MODEL\")) | .name")
           echo "待删除的 Releases: $RELEASES"
           if [ -n "$RELEASES" ]; then
             for RELEASE in $RELEASES; do
+              if [ "$RELEASE" = "$CURRENT_RELEASE" ]; then
+                echo "跳过当前 Release: $RELEASE"
+                continue
+              fi
               gh release delete "$RELEASE" --yes || { echo "删除 Release $RELEASE 失败"; exit 1; }
             done
           else
