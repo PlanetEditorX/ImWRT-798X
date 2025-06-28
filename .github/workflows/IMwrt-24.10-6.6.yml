@@ -409,7 +409,7 @@ jobs:
         continue-on-error: true
 
       - name: 发布固件
-        uses: softprops/action-gh-release@v2.1.0
+        uses: softprops/action-gh-release@v2.3.2
         if: steps.tag.outputs.status == 'success'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
