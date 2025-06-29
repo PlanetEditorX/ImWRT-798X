@@ -400,15 +400,10 @@ jobs:
           echo "RELEASE_TAG env: $RELEASE_TAG"
 
       - name: 创建发布
-        id: create_release
-        uses: actions/create-release@v1
-        if: steps.tag.outputs.status == 'success'
+        run: |
+          gh release create "$RELEASE_TAG" --title "$RELEASE_TAG" --notes-file "${{ github.workspace }}/release.txt" --repo ${{ github.repository }} --target ${{ github.sha }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ env.RELEASE_TAG }}
-          release_name: ${{ env.RELEASE_TAG }}
-          body_path: ${{ github.workspace }}/release.txt
 
       - name: 查找固件文件
         id: find_firmware
