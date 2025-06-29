@@ -365,7 +365,7 @@ jobs:
             echo "固件版本: ImmortalWrt ${{ env.FIRMWARE_VERSION }}"
             echo "设备型号: ${{ matrix.device_model }}"
             echo "编译时间: $(date +'%Y-%m-%d %H:%M %Z')"
-            echo "高功率模式: $([ "${{ github.event.inputs.enable_5g_25db }}" = 'true' ] && echo '已启用' || echo '未启用')"
+            echo "高功率模式: $([ "$ENABLE_5G_25DB" = 'true' ] && echo '已启用' || echo '未启用')"
             echo -e "\n### 更新内容"
             git log --pretty=format:"- %s" -n 5
           } > release.txt
