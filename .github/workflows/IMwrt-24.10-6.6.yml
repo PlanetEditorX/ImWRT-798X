@@ -423,16 +423,12 @@ jobs:
           echo "ASSET_NAME=$(basename $FILE)" >> $GITHUB_ENV
           echo "found=true" >> $GITHUB_OUTPUT
 
-      - name: 上传固件
-        uses: actions/upload-release-asset@v1
+      - name: 上传固件到 Release
         if: steps.create_release.outputs.id && steps.find_firmware.outputs.found == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ env.ASSET_PATH }}
-          asset_name: ${{ env.ASSET_NAME }}
-          asset_content_type: application/octet-stream
+        run: |
+          gh release upload "$RELEASE_TAG" "$ASSET_PATH" --repo ${{ github.repository }} --clobber
 
       - name: 验证Release创建
         run: |
