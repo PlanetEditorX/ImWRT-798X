@@ -23,14 +23,19 @@
   - `enable_5g_25db`：是否启用 5G 25dB 增强（默认：启用）。
 - 运行后，固件将上传到 GitHub Release 。
 
-### 3. 定时触发
+### 3. 编译失败
+ - 在创建发布时失败：HTTP 403: Resource not accessible by integration (https://api.github.com/repos/PlanetEditorX/ImWRT-798X/releases)
+  - 在 fork 仓库下新建一个 Personal Access Token (classic)（需要 repo 权限），在仓库 Secrets 里添加，比如叫 GH_TOKEN，然后 workflow 里用它替换 GITHUB_TOKEN
+
+
+### 4. 定时触发
 - 无需手动操作，工作流每天（UTC 00:00，北京时间 08:00）检查源仓库 `padavanonly/immortalwrt-mt798x-24.10` 的 `2410` 分支。
 - 如果有更新，自动为所有 CMCC 机型编译固件，并上传 `sysupgrade.bin`。
 
-### 4. 下载固件
+### 5. 下载固件
 - **GitHub Release**：在仓库的 **Releases** 页面查找 `v24.10-<device_model>` 标签，下载 `sysupgrade.bin`。
 
-### 5. 刷写固件
+### 6. 刷写固件
 - 确认设备型号与固件匹配。
 - 备份设备原有固件。
 - 使用 Web 界面或 SSH 刷入 `sysupgrade.bin` 文件。
