@@ -421,7 +421,7 @@ jobs:
           echo "found=true" >> $GITHUB_OUTPUT
 
       - name: 上传固件到 Release
-        if: steps.create_release.outputs.id && steps.find_firmware.outputs.found == 'true'
+        if: steps.find_firmware.outputs.found == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
